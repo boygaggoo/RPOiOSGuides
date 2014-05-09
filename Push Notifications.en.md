@@ -10,7 +10,7 @@ Apple Push Notification service (APNS for short) is the centerpiece of the push 
 
 ###How APNS works?
 
-If the notification service is enabled in your app, iOS will generate a unique ID, called **device token**. This token is generated when the app is opened for the firt time and the user acepts the app to send him push notifications. We need to send this token to our server and storage it on a database in order to send requests to the APNS server. Then, we will have to use a library to interact with the APNS server. We will see these libraries below.
+If the notification service is enabled in your app, iOS will generate a unique ID, called **device token**. This token is generated when the app is opened for the firt time and the user accepts the app to send him push notifications. We need to send this token to our server and store it on a database in order to send requests to the APNS server. Then, we will have to use a library to interact with the APNS server. We will see these libraries below.
 
 ###APNS server libraries
 
@@ -27,13 +27,13 @@ If the notification service is enabled in your app, iOS will generate a unique I
 
 First of all, we have to be registered as [Apple Developer](http://developer.apple.com) because we need to create an App ID for our app that supports push notifications as well as a provisioning profile linked to that App ID and the device(s) we're going to test the notifications on. This provisioning profile has to be imported on Xcode.
 
-Then, we have to tell iOS that our app wants to receive push notifications. This is made with:
+Then, we have to tell iOS that our app wants to receive push notifications. So we should put this on ```application:didFinishLaunchingWithOptions:``` on the AppDelegate:
 
 	[[UIApplication sharedApplication] registerForRemoteNotificationTypes: (UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert)];
 	
 This will make our app able to change its badge number, play notification sounds while closed and show notifications alerts from a server. If you don't need one of these options, feel free to remove it.
 
-![](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Art/registration_sequence_2x.png =500x)
+![](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Art/registration_sequence_2x.png)
 
 When we open our app and it detects that it should receive push notifications, it will call the APNS server requesting a **deviceToken**. The device token is a 32 bytes string with 64 Hexadecimal characters. We will use this unique ID to send notifications to this device. If we want to send a notification to a user, for example, that has multiple devices, we will have to store one token per device on our server and then send a notification for each device.
 
@@ -50,13 +50,25 @@ Then, we just have to upload it to our server with a simple request.
 
 ###Server side: setting up a APNS communicator
 
-![](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Art/remote_notif_simple_2x.png =500x)
+![](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Art/remote_notif_simple_2x.png)
 
-So the push notification will work like that: we have a provider, that is our server, that will send a request with a payload to the Apple Push Notification Service server. The device will get the notification and if the payload information matches with the device information and the notifications are enabled on the device, it will finally be shown up.
+So the push notification will work like that: we have a provider, which is our server, that will send a request with a payload to the Apple Push Notification Service server. The device will get the notification and if the payload information matches with the device information and the notifications are enabled on the device, it will finally show up.
 
 Ok, now we have our app ready to receive push notifications. But we need a server which will send to the Apple Push Notification Service the **payload**.
 
-The payload is a JSON-defined property list that specifies how the user of an application on a device is to be alerted. This contains the message, badge count, sound alert file and custom keys if the developer want to send non-public information. I mean, data that will not be shown on the push notification but can be catched programmatically.
+The payload is a JSON-defined property list that specifies how the user of an application on a device is to be alerted. This contains the message, badge count, sound alert file and custom keys if the developer want to send non-public information. I mean, data that will not be shown on the push notification but can be catched programmatically. Example:
+
+	{
+    	"aps" : {
+        	"alert" : "Hi, I'm a push notification message!",
+        	"badge" : 0,
+        	"sound" : "chime"
+    	},
+    	"acme1" : "bar",
+    	"acme2" : ["data1", "data2"]
+	}
+
+![](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Art/token_trust_2x.png)
 
 Before start building the API, we need to create some certificates.
 
