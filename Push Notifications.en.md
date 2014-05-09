@@ -44,8 +44,6 @@ With ```-didRegisterForRemoteNotificationsWithDeviceToken:``` we will get the de
         NSString *token = [deviceToken description];
 	}
 	
-The difference between the deviceToken and the token string it that the last one doesn't have the symbols, since it is like < XXXX XXXX XXXX XXXX … > and we need it like XXXXXXXXXXXXXX…
-
 Then, we just have to upload it to our server with a simple request.
 
 ###Server side: setting up a APNS communicator
