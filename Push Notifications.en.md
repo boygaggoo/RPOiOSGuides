@@ -4,26 +4,28 @@
 
 This guide will help you out to **start pushing iOS notifications** to real devices (since the simulator is not supported) taking advantage of the *Apple Push Notification Service*.
 
-###What's APNS?
+##What's APNS?
 
 Apple Push Notification service (APNS for short) is the centerpiece of the push notifications feature. It is a robust and highly efficient service for propagating information to iOS and OS X devices. Each device establishes an accredited and encrypted IP connection with the service and receives notifications over this persistent connection. If a notification for an application arrives when that application is not running, the device alerts the user that the application has data waiting for it.
 
-###How APNS works?
+##How APNS works?
+
+![](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Art/registration_sequence_2x.png)
 
 If the notification service is enabled in your app, iOS will generate a unique ID, called **device token**. This token is generated when the app is opened for the firt time and the user accepts the app to send him push notifications. We need to send this token to our server and store it on a database in order to send requests to the APNS server. Then, we will have to use a library to interact with the APNS server. We will see these libraries below.
 
-###APNS server libraries
+##APNS server libraries
 
-####PHP
+###PHP
 
 * [**EasyAPNS**](http://www.easyapns.com/)
 * [**ApnsPHP**](https://code.google.com/p/apns-php/)
 
-####Node.js
+###Node.js
 
 * [**apnagent**](http://apnagent.qualiancy.com/) (*We'll use this one on this guide*)
 
-###Setting up push notification support on our app
+##Setting up push notification support on our app
 
 First of all, we have to be registered as [Apple Developer](http://developer.apple.com) because we need to create an App ID for our app that supports push notifications as well as a provisioning profile linked to that App ID and the device(s) we're going to test the notifications on. This provisioning profile has to be imported on Xcode.
 
@@ -33,7 +35,7 @@ Then, we have to tell iOS that our app wants to receive push notifications. So w
 	
 This will make our app able to change its badge number, play notification sounds while closed and show notifications alerts from a server. If you don't need one of these options, feel free to remove it.
 
-![](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Art/registration_sequence_2x.png)
+![](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Art/token_generation_2x.png)
 
 When we open our app and it detects that it should receive push notifications, it will call the APNS server requesting a **deviceToken**. The device token is a 32 bytes string with 64 Hexadecimal characters. We will use this unique ID to send notifications to this device. If we want to send a notification to a user, for example, that has multiple devices, we will have to store one token per device on our server and then send a notification for each device.
 
@@ -46,7 +48,7 @@ With ```-didRegisterForRemoteNotificationsWithDeviceToken:``` we will get the de
 	
 Then, we just have to upload it to our server with a simple request.
 
-###Server side: setting up a APNS communicator
+##Server side: setting up a APNS communicator
 
 ![](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Art/remote_notif_simple_2x.png)
 
@@ -58,7 +60,7 @@ The payload is a JSON-defined property list that specifies how the user of an ap
 
 	{
     	"aps" : {
-        	"alert" : "Hi, I'm a push notification message!",
+        	"alert" : "Hey! I'm a push notification! :D",
         	"badge" : 0,
         	"sound" : "chime"
     	},
@@ -70,7 +72,7 @@ The payload is a JSON-defined property list that specifies how the user of an ap
 
 Before start building the API, we need to create some certificates.
 
-####Certificates
+###Certificates
 
 1. Log in the iOS Provision Portal from the Apple Developer website. Select "App IDs" from the left side menu, then "configure" next to the application you wish generate certificates for.
 
@@ -95,7 +97,7 @@ The first will generate a *.pem* file for use as the cert file. The second will 
 
 	openssl rsa -in apnagent-dev-key.pem -out apnagent-dev-key.pem
 
-####Building the API
+###Building the API
 
 So, we will have to build a simple API on our server to handle the device token reception and the remote notifications control.
 
@@ -121,11 +123,15 @@ If we are going to use our server on production, we will have to  change the cer
 		.set('cert file', join(__dirname, 'certs/apns-prod-cert.pem'))
 		.set('key file', join(__dirname, 'certs/apns-prod-key.pem'));
 		
-Once it's configured, we are ready to send our push notification to the APNS server.
+Once it's configured, we are ready to send our push notification to the APNS server. Take a look at all the functions we are asigning, like ```alert```, ```badge```, ```sound```, etc. All the information we're are going to send with this code matches with the payload we put above. *apnagent* will transform all this information into a JSON **payload** to send it to the APNS server.
 		
 	agent.createMessage()
     	.device("<a1b56d2c 08f621d8 7060da2b c3887246 f17bb200 89a9d44b fb91c7d0 97416b30>")
     	.alert("Hey! I'm a push notification! :D")
+    	.badge(0)
+    	.sound("chime")
+    	.set("acme1", "bar")
+    	.set("acme2", ["data1", "data2"])
     	.send(function (err) {
 
       	if (err && err.toJSON) {
