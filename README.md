@@ -6,7 +6,7 @@ Don't forget to link if the guide is based in an external source.
 
 You can contact me through:
 
-+ Correo: [roberto.pastor.ortiz@gmail.com](mailto:roberto.pastor.ortiz@gmail.com)
++ Mail: [roberto.pastor.ortiz@gmail.com](mailto:roberto.pastor.ortiz@gmail.com)
 + Twitter: [@Roberto_Pastor](http://twitter.com/Roberto_Pastor)
 
 I hope it helps :) 
